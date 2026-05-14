@@ -45,6 +45,7 @@ CREATE TABLE dogs (
     birth_date DATE,
 
     mating_id INT
+    REFERENCES matings(mating_id)
 );
 
 -- ВЯЗКИ
