@@ -23,7 +23,7 @@ private:
 
     QSqlDatabase db;
 
-    // ================= МОДЕЛИ =================
+    //  МОДЕЛИ 
     QSqlTableModel *model = nullptr;        // собаки
     QSqlTableModel *diseaseModel = nullptr; // болезни
     QSqlTableModel *exhibModel = nullptr;   // выставки
@@ -33,7 +33,7 @@ private:
     QSqlTableModel *matingModel = nullptr;  // вязки
 
 
-    // ================= ФУНКЦИИ =================
+    //  ФУНКЦИИ 
     void connectToDB();
 
     void setupTable();
