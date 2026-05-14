@@ -21,31 +21,30 @@ CREATE TABLE breeds (
 
 -- СОБАКИ
 
-CREATE TABLE dogs (
-    dog_id SERIAL PRIMARY KEY,
+CREATE TABLE "собаки" (
+    "код собаки" SERIAL PRIMARY KEY,
 
-    breed_id INT NOT NULL
-    REFERENCES breeds(breed_id)
+    "код породы" INT NOT NULL
+    REFERENCES "породы"("код породы")
     ON DELETE CASCADE,
 
-    nickname VARCHAR(100) NOT NULL,
+    "кличка" VARCHAR(100) NOT NULL,
 
-    gender CHAR(1)
-    CHECK (gender IN ('M','F')),
+    "пол" CHAR(1)
+    CHECK ("пол" IN ('M','F')),
 
-    owner VARCHAR(150),
+    "владелец" VARCHAR(150),
 
-    address TEXT,
+    "адрес" TEXT,
 
-    is_alive BOOLEAN DEFAULT TRUE,
+    "жив" BOOLEAN DEFAULT TRUE,
 
-    psyche_score INT
-    CHECK (psyche_score BETWEEN 1 AND 5),
+    "оценка психики" INT
+    CHECK ("оценка психики" BETWEEN 1 AND 5),
 
-    birth_date DATE,
+    "дата рождения" DATE,
 
-    mating_id INT
-    REFERENCES matings(mating_id)
+    "код вязки" INT
 );
 
 -- ВЯЗКИ
