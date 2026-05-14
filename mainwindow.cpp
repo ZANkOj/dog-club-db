@@ -812,40 +812,81 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->btnPairs, &QPushButton::clicked, this, [this]()
 
-
             {
                 bool ok;
 
+                int minRating = QInputDialog::getInt(
+                    this,
+                    "Фильтр отчёта",
+                    "Минимальная средняя оценка:",
+                    4, 1, 5, 1, &ok);
 
-                    int minRating = QInputDialog::getInt(
-                        this, "Фильтр отчёта", "Минимальная средняя оценка:",
-                        4, 1, 5, 1, &ok);
-                if(!ok) return;
+                if(!ok)
+                    return;
 
                 QString sortField = QInputDialog::getItem(
-                    this, "Сортировка", "Сортировать по:",
-                    {"средняя оценка", "количество выставок", "кличка самца", "кличка самки"},
-                    0, false, &ok);
-                if(!ok) return;
+                    this,
+                    "Сортировка",
+                    "Сортировать по:",
+                    {
+                        "средняя оценка",
+                        "количество выставок",
+                        "кличка самца",
+                        "кличка самки"
+                    },
+                    0,
+                    false,
+                    &ok);
+
+                if(!ok)
+                    return;
 
                 QString sortOrder = QInputDialog::getItem(
-                    this, "Порядок", "Порядок сортировки:",
-                    {"по убыванию", "по возрастанию"},
-                    0, false, &ok);
-                if(!ok) return;
+                    this,
+                    "Порядок",
+                    "Порядок сортировки:",
+                    {
+                        "по убыванию",
+                        "по возрастанию"
+                    },
+                    0,
+                    false,
+                    &ok);
 
-                QString orderDir = (sortOrder == "по убыванию") ? "DESC" : "ASC";
+                if(!ok)
+                    return;
+
+                QString orderDir =
+                    (sortOrder == "по убыванию")
+                        ? "DESC"
+                        : "ASC";
 
                 QString orderBy;
 
                 if(sortField == "средняя оценка")
-                    orderBy = QString("(AVG(e1.\"оценка\") + AVG(e2.\"оценка\")) / 2 %1").arg(orderDir);
+                {
+                    orderBy =
+                        QString("(AVG(e1.\"оценка\") + AVG(e2.\"оценка\")) / 2 %1")
+                            .arg(orderDir);
+                }
                 else if(sortField == "количество выставок")
-                    orderBy = QString("COUNT(e1.\"код выставки\") + COUNT(e2.\"код выставки\") %1").arg(orderDir);
+                {
+                    orderBy =
+                        QString("COUNT(e1.\"код выставки\") + COUNT(e2.\"код выставки\") %1")
+                            .arg(orderDir);
+                }
                 else if(sortField == "кличка самца")
-                    orderBy = QString("d1.\"кличка\" %1").arg(orderDir);
+                {
+                    orderBy =
+                        QString("d1.\"кличка\" %1")
+                            .arg(orderDir);
+                }
                 else
-                    orderBy = QString("d2.\"кличка\" %1").arg(orderDir);
+                {
+                    orderBy =
+                        QString("d2.\"кличка\" %1")
+                            .arg(orderDir);
+                }
 
                 QSqlQuery query;
 
@@ -854,36 +895,62 @@ MainWindow::MainWindow(QWidget *parent)
                     "AVG(e1.\"оценка\"), AVG(e2.\"оценка\"), "
                     "COUNT(e1.\"код выставки\"), COUNT(e2.\"код выставки\") "
                     "FROM \"собаки\" d1 "
-                    "JOIN \"собаки\" d2 ON d1.\"код собаки\" < d2.\"код собаки\" "
-                    "JOIN \"выставки\" e1 ON e1.\"код собаки\" = d1.\"код собаки\" "
-                    "JOIN \"выставки\" e2 ON e2.\"код собаки\" = d2.\"код собаки\" "
-                    "WHERE d1.\"пол\"='M' AND d2.\"пол\"='F' "
+                    "JOIN \"собаки\" d2 "
+                    "ON d1.\"код собаки\" < d2.\"код собаки\" "
+                    "JOIN \"выставки\" e1 "
+                    "ON e1.\"код собаки\" = d1.\"код собаки\" "
+                    "JOIN \"выставки\" e2 "
+                    "ON e2.\"код собаки\" = d2.\"код собаки\" "
+                    "WHERE d1.\"пол\"='M' "
+                    "AND d2.\"пол\"='F' "
+                    "AND NOT \"проверка_родства_для_вязки\"("
+                    "d1.\"код собаки\", "
+                    "d2.\"код собаки\") "
                     "GROUP BY d1.\"кличка\", d2.\"кличка\" "
-                    "HAVING AVG(e1.\"оценка\") >= :rating AND AVG(e2.\"оценка\") >= :rating "
+                    "HAVING AVG(e1.\"оценка\") >= :rating "
+                    "AND AVG(e2.\"оценка\") >= :rating "
                     "ORDER BY " + orderBy
                     );
 
                 query.bindValue(":rating", minRating);
+
                 query.exec();
 
-                QString result = "САМЕЦ | САМКА | СР.ОЦЕНКА | ВЫСТАВОК\n\n";
+                QString result =
+                    "САМЕЦ | САМКА | СР.ОЦЕНКА | ВЫСТАВОК\n\n";
 
                 while(query.next())
                 {
-                    double totalAvg = (query.value(2).toDouble() + query.value(3).toDouble()) / 2.0;
-                    int totalShows  = query.value(4).toInt() + query.value(5).toInt();
+                    double totalAvg =
+                        (
+                            query.value(2).toDouble()
+                            +
+                            query.value(3).toDouble()
+                            ) / 2.0;
 
-                    result += query.value(0).toString() + " | "
-                              + query.value(1).toString() + " | "
-                              + QString::number(totalAvg, 'f', 2) + " | "
-                              + QString::number(totalShows) + "\n";
+                    int totalShows =
+                        query.value(4).toInt()
+                        +
+                        query.value(5).toInt();
+
+                    result +=
+                        query.value(0).toString()
+                        + " | "
+                        + query.value(1).toString()
+                        + " | "
+                        + QString::number(totalAvg, 'f', 2)
+                        + " | "
+                        + QString::number(totalShows)
+                        + "\n";
                 }
 
-                QMessageBox::information(this, "Отчёт: пары для вязки", result);
-
+                QMessageBox::information(
+                    this,
+                    "Отчёт: пары для вязки",
+                    result
+                    );
 
             });
-
 
         // ЭЛИТНЫЕ ПАРЫ
 
@@ -1183,7 +1250,6 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-
 
 
 
