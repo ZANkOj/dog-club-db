@@ -47,8 +47,6 @@ private:
     void loadBreeds();
 
 
-    QSqlTableModel* getCurrentModel();
-    QTableView* getCurrentView();
 };
 
 #endif // MAINWINDOW_H
